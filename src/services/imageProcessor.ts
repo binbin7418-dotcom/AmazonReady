@@ -18,10 +18,13 @@ export async function processImage(file: File): Promise<ProcessedImage> {
   // Convert file to base64
   const base64 = await fileToBase64(file);
   
-  // Try to use real Replicate API if token is available
+  // 始终尝试调用后端 API（Vercel Serverless Function）
+  // 只有在本地开发且没有配置 token 时才走模拟
   const replicateToken = import.meta.env.VITE_REPLICATE_API_TOKEN;
+  const isDev = import.meta.env.DEV;
   
-  if (replicateToken && !replicateToken.includes('placeholder')) {
+  // 生产环境始终走真实 API，本地开发有 token 也走真实 API
+  if (!isDev || (replicateToken && !replicateToken.includes('placeholder'))) {
     try {
       return await processWithReplicate(base64, file);
     } catch (error) {
@@ -30,7 +33,7 @@ export async function processImage(file: File): Promise<ProcessedImage> {
     }
   }
   
-  // Fallback to simulation
+  // 本地开发且没有 token 才走模拟
   return simulateImageProcessing(base64, file);
 }
 

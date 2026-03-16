@@ -20,7 +20,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No image provided' });
     }
 
-    const REPLICATE_API_TOKEN = process.env.VITE_REPLICATE_API_TOKEN;
+    // 支持两种环境变量名（VITE_前缀是给前端用的，服务端用不带前缀的）
+    const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || process.env.VITE_REPLICATE_API_TOKEN;
 
     if (!REPLICATE_API_TOKEN) {
       return res.status(500).json({ error: 'API token not configured' });
