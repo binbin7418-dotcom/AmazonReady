@@ -1,7 +1,7 @@
-// Vercel Serverless Function for background removal
+// Vercel Serverless Function - remove.bg API
 
 export const config = {
-  maxDuration: 60,
+  maxDuration: 30,
   api: {
     bodyParser: {
       sizeLimit: '10mb',
@@ -14,92 +14,66 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const { imageBase64 } = req.body;
+    if (!imageBase64) return res.status(400).json({ error: 'No image provided' });
 
-    if (!imageBase64) {
-      return res.status(400).json({ error: 'No image provided' });
+    const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
+    if (!REMOVE_BG_API_KEY) {
+      return res.status(500).json({ error: 'REMOVE_BG_API_KEY not configured' });
     }
 
-    const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN || process.env.VITE_REPLICATE_API_TOKEN;
+    // 把 base64 转成二进制
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const imageBuffer = Buffer.from(base64Data, 'base64');
 
-    if (!REPLICATE_API_TOKEN) {
-      return res.status(500).json({ error: 'API token not configured' });
-    }
+    // 构建 multipart form data
+    const boundary = '----FormBoundary' + Math.random().toString(36).substr(2);
+    const formParts = [
+      `--${boundary}\r\nContent-Disposition: form-data; name="image_file"; filename="image.jpg"\r\nContent-Type: image/jpeg\r\n\r\n`,
+      imageBuffer,
+      `\r\n--${boundary}\r\nContent-Disposition: form-data; name="size"\r\n\r\nauto\r\n--${boundary}--\r\n`
+    ];
 
-    console.log('Starting background removal, image size:', imageBase64.length, 'chars');
+    const bodyParts = formParts.map(p => typeof p === 'string' ? Buffer.from(p) : p);
+    const body = Buffer.concat(bodyParts);
 
-    // 创建预测任务，直接传 base64（Replicate 支持 data URI）
-    const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+    console.log('Calling remove.bg API, image size:', imageBuffer.length, 'bytes');
+
+    const response = await fetch('https://api.remove.bg/v1.0/removebg', {
       method: 'POST',
       headers: {
-        'Authorization': `Token ${REPLICATE_API_TOKEN}`,
-        'Content-Type': 'application/json',
+        'X-Api-Key': REMOVE_BG_API_KEY,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
-      body: JSON.stringify({
-        version: '95fcc2a26d3899cd6c2691c900465aaeff466285d65c14638cc5f36f34befaf1',
-        input: { image: imageBase64 }
-      })
+      body,
     });
 
-    const createText = await createResponse.text();
-    console.log('Create response status:', createResponse.status);
-    console.log('Create response body:', createText.substring(0, 500));
+    console.log('remove.bg response status:', response.status);
 
-    if (!createResponse.ok) {
-      return res.status(500).json({ 
-        error: 'Failed to start processing', 
-        details: createText,
-        status: createResponse.status
-      });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('remove.bg error:', errText);
+      return res.status(500).json({ error: 'remove.bg API failed', details: errText, status: response.status });
     }
 
-    const prediction = JSON.parse(createText);
-    console.log('Prediction ID:', prediction.id, 'Status:', prediction.status);
+    // 返回透明 PNG 的 base64
+    const arrayBuffer = await response.arrayBuffer();
+    const pngBase64 = Buffer.from(arrayBuffer).toString('base64');
+    const dataUrl = `data:image/png;base64,${pngBase64}`;
 
-    // 轮询结果，最多等 55 秒
-    let result = prediction;
-    const deadline = Date.now() + 55000;
+    console.log('Success! PNG size:', arrayBuffer.byteLength, 'bytes');
 
-    while ((result.status === 'starting' || result.status === 'processing') && Date.now() < deadline) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
-        headers: { 'Authorization': `Token ${REPLICATE_API_TOKEN}` }
-      });
-
-      result = await pollResponse.json();
-      console.log('Poll status:', result.status);
-    }
-
-    if (result.status !== 'succeeded' || !result.output) {
-      console.error('Processing failed:', result.status, result.error);
-      return res.status(500).json({
-        error: 'Processing failed',
-        status: result.status,
-        details: result.error
-      });
-    }
-
-    console.log('Success! Output:', result.output);
     return res.status(200).json({
       success: true,
-      imageUrl: result.output
+      imageUrl: dataUrl  // 直接返回 base64，不需要再下载
     });
 
   } catch (error) {
     console.error('Server error:', error);
-    return res.status(500).json({
-      error: 'Internal server error',
-      details: error.message
-    });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }

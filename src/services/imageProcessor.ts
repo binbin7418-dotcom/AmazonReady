@@ -65,12 +65,18 @@ async function processWithReplicate(base64: string, file: File): Promise<Process
     throw new Error('No processed image returned');
   }
 
-  // Download the processed image (transparent PNG)
-  const imageResponse = await fetch(data.imageUrl);
-  const imageBlob = await imageResponse.blob();
-  
-  // Convert to base64 and add white background
-  const processedBase64 = await blobToBase64(imageBlob);
+  // imageUrl 可能是 base64 data URL 或远程 URL
+  let processedBase64: string;
+  if (data.imageUrl.startsWith('data:')) {
+    // remove.bg 直接返回 base64
+    processedBase64 = data.imageUrl;
+  } else {
+    // Replicate 返回远程 URL，需要下载
+    const imageResponse = await fetch(data.imageUrl);
+    const imageBlob = await imageResponse.blob();
+    processedBase64 = await blobToBase64(imageBlob);
+  }
+
   const finalImage = await addWhiteBackgroundAndResize(processedBase64);
 
   return {
