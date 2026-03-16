@@ -1,8 +1,12 @@
 // Vercel Serverless Function for background removal
-// maxDuration: 60 seconds
 
 export const config = {
   maxDuration: 60,
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
 };
 
 export default async function handler(req, res) {
@@ -31,7 +35,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API token not configured' });
     }
 
-    // 创建预测任务
+    console.log('Starting background removal, image size:', imageBase64.length, 'chars');
+
+    // 创建预测任务，直接传 base64（Replicate 支持 data URI）
     const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
@@ -44,14 +50,20 @@ export default async function handler(req, res) {
       })
     });
 
+    const createText = await createResponse.text();
+    console.log('Create response status:', createResponse.status);
+    console.log('Create response body:', createText.substring(0, 500));
+
     if (!createResponse.ok) {
-      const errText = await createResponse.text();
-      console.error('Replicate create error:', errText);
-      return res.status(500).json({ error: 'Failed to start processing', details: errText });
+      return res.status(500).json({ 
+        error: 'Failed to start processing', 
+        details: createText,
+        status: createResponse.status
+      });
     }
 
-    const prediction = await createResponse.json();
-    console.log('Prediction created:', prediction.id, 'status:', prediction.status);
+    const prediction = JSON.parse(createText);
+    console.log('Prediction ID:', prediction.id, 'Status:', prediction.status);
 
     // 轮询结果，最多等 55 秒
     let result = prediction;
@@ -77,7 +89,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('Success! Output URL:', result.output);
+    console.log('Success! Output:', result.output);
     return res.status(200).json({
       success: true,
       imageUrl: result.output
