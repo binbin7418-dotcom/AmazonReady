@@ -41,7 +41,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.warn('Session error:', sessionError);
+        set({ initialized: true, loading: false });
+        return;
+      }
       
       if (session?.user) {
         set({ user: session.user });
@@ -62,6 +68,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ initialized: true, loading: false });
     } catch (error) {
       console.error('Auth initialization error:', error);
+      // Always set initialized to true so app doesn't hang
       set({ initialized: true, loading: false });
     }
   },
