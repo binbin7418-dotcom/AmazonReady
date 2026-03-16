@@ -17,6 +17,7 @@ export default function BatchImageUploader() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [processing, setProcessing] = useState(false);
   const [credits, setCredits] = useState(() => getCredits());
+  const [progressText, setProgressText] = useState('');
 
   const refreshCredits = () => {
     setCredits(getCredits());
@@ -58,6 +59,10 @@ export default function BatchImageUploader() {
     let processedCount = 0;
 
     for (const image of pendingImages) {
+      const current = pendingImages.indexOf(image) + 1;
+      const total = pendingImages.length;
+      setProgressText(`Processing ${current}/${total} - ~20s per image...`);
+
       // Update status to processing
       setImages(prev => prev.map(img => 
         img.id === image.id ? { ...img, status: 'processing' as const } : img
@@ -89,6 +94,7 @@ export default function BatchImageUploader() {
 
     refreshCredits();
     setProcessing(false);
+    setProgressText('');
     toast.success(`${processedCount} image(s) processed successfully!`);
   };
 
@@ -191,7 +197,7 @@ export default function BatchImageUploader() {
           {processing ? (
             <>
               <Loader className="w-5 h-5 animate-spin" />
-              Processing {pendingCount} image(s)...
+              {progressText || `Processing ${pendingCount} image(s)...`}
             </>
           ) : (
             <>
