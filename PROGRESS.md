@@ -50,12 +50,11 @@ git push origin main
 - [x] 处理历史记录 (ProcessingHistory)
 - [x] Vercel 部署成功 → https://amazon-ready-c591.vercel.app
 - [x] GitHub 仓库 → https://github.com/binbin7418-dotcom/AmazonReady
-- [x] Replicate API Token 配置到 Vercel 环境变量
-- [x] Serverless Function 超时设为 60s（单张图够用）
-- [x] 批量上传时每张图顺序处理，加了处理中状态提示
+- [x] remove.bg API 接入，去背景功能正常运行 ✅
+- [x] 白底 2000x2000px 合规处理
 
 #### 🔴 进行中
-- [ ] 去背景功能验证（最新修复已推送，等待部署测试）
+- 核心功能已全部跑通
 
 #### ⏳ 待开发
 - [ ] 处理结果对比展示（左原图 / 右处理后）
