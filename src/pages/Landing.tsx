@@ -78,7 +78,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
             <PricingCard
               name="Starter"
               price="$19"
-              period="/month"
+              period=" one-time"
               credits="500 images"
               features={[
                 'Batch processing',
@@ -86,11 +86,12 @@ export default function Landing({ onGetStarted }: LandingProps) {
                 'Email support',
               ]}
               popular={false}
+              buyUrl="https://ko-fi.com/s/08a2884d3e"
             />
             <PricingCard
               name="Pro"
               price="$49"
-              period="/month"
+              period=" one-time"
               credits="2000 images"
               features={[
                 'Everything in Starter',
@@ -99,12 +100,13 @@ export default function Landing({ onGetStarted }: LandingProps) {
                 'Priority support',
               ]}
               popular={true}
+              buyUrl="https://ko-fi.com/s/6c5b4aeb32"
             />
             <PricingCard
               name="Enterprise"
               price="$199"
-              period="/month"
-              credits="Unlimited"
+              period=" one-time"
+              credits="Unlimited images"
               features={[
                 'Everything in Pro',
                 'White-label service',
@@ -112,12 +114,23 @@ export default function Landing({ onGetStarted }: LandingProps) {
                 'Custom integrations',
               ]}
               popular={false}
+              buyUrl="https://ko-fi.com/s/a04a55443d"
             />
           </div>
         </div>
 
+        {/* Delivery Notice */}
+        <div className="mt-12 text-center">
+          <p className="text-gray-500 text-sm">
+            Credits delivered within 24 hours after purchase. Questions? Email us at{' '}
+            <a href="mailto:binbin7418@gmail.com" className="text-primary underline">
+              binbin7418@gmail.com
+            </a>
+          </p>
+        </div>
+
         {/* CTA Section */}
-        <div className="mt-20 text-center bg-primary text-white rounded-2xl p-12">
+        <div className="mt-12 text-center bg-primary text-white rounded-2xl p-12">
           <h2 className="text-3xl font-bold mb-4">Ready to Stop Wasting Time?</h2>
           <p className="text-xl mb-8 opacity-90">Join 500+ sellers who trust AmazonReady AI</p>
           <button
@@ -142,13 +155,14 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
   );
 }
 
-function PricingCard({ name, price, period, credits, features, popular }: {
+function PricingCard({ name, price, period, credits, features, popular, buyUrl }: {
   name: string;
   price: string;
   period: string;
   credits: string;
   features: string[];
   popular: boolean;
+  buyUrl: string;
 }) {
   return (
     <div className={`bg-white rounded-xl shadow-lg p-8 ${popular ? 'ring-2 ring-primary scale-105' : ''}`}>
@@ -171,9 +185,14 @@ function PricingCard({ name, price, period, credits, features, popular }: {
           </li>
         ))}
       </ul>
-      <button className="w-full bg-primary hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors">
+      <a
+        href={buyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block w-full bg-primary hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors text-center"
+      >
         Get Started
-      </button>
+      </a>
     </div>
   );
 }

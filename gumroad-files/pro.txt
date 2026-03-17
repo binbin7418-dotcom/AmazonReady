@@ -1,0 +1,21 @@
+AmazonReady AI - Pro Pack (2000 Credits)
+
+Thank you for your purchase!
+
+You have purchased 2000 image processing credits.
+
+Tool URL: https://amazon-ready-c591.vercel.app
+
+To activate your credits:
+Reply to your purchase receipt email with your account email address.
+We will add your 2000 credits within 24 hours.
+
+What you can do with AmazonReady AI:
+- Remove product image backgrounds automatically
+- Auto-format to Amazon-compliant white background (RGB 255,255,255)
+- Resize to 2000x2000px with product at 85% frame
+- Batch process multiple images at once
+- Priority processing
+- API access
+
+Questions? Contact us via Gumroad message.
