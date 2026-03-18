@@ -32,11 +32,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       supabase.auth.onAuthStateChange(async (event, session) => {
-        set({ user: session?.user || null });
-        if (session?.user) {
+        if (event === 'SIGNED_OUT') {
+          set({ user: null, profile: null });
+        } else if (session?.user) {
+          set({ user: session.user });
           await get().fetchProfile();
-        } else {
-          set({ profile: null });
         }
       });
     } catch (error) {
