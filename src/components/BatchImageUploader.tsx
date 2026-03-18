@@ -66,16 +66,22 @@ export default function BatchImageUploader() {
       ));
 
       try {
+        // 先扣 credit，扣失败就跳过
+        const deducted = await deductCredit();
+        if (!deducted) {
+          setImages(prev => prev.map(img =>
+            img.id === image.id ? { ...img, status: 'failed' as const, error: 'Insufficient credits' } : img
+          ));
+          continue;
+        }
+
         const result = await processImage(image.file);
         
         setImages(prev => prev.map(img => 
           img.id === image.id ? { ...img, status: 'completed' as const, result } : img
         ));
         
-        // Deduct credit
-        if (await deductCredit()) {
-          processedCount++;
-        }
+        processedCount++;
       } catch (error) {
         console.error('Processing error:', error);
         setImages(prev => prev.map(img => 
