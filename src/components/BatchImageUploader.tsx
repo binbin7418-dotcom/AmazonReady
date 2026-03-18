@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, CheckCircle, XCircle, Download, Trash2, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { processImage, type ProcessedImage } from '../services/imageProcessor';
-import { getCredits, deductCredits, addProcessedImage } from '../services/storageService';
+import { useAuthStore } from '../store/authStore';
 
 interface ImageItem {
   id: string;
@@ -16,12 +16,9 @@ interface ImageItem {
 export default function BatchImageUploader() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [credits, setCredits] = useState(() => getCredits());
   const [progressText, setProgressText] = useState('');
-
-  const refreshCredits = () => {
-    setCredits(getCredits());
-  };
+  const { profile, deductCredit } = useAuthStore();
+  const credits = profile?.credits_balance ?? 0;
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newImages: ImageItem[] = acceptedFiles.map(file => ({
@@ -75,9 +72,8 @@ export default function BatchImageUploader() {
           img.id === image.id ? { ...img, status: 'completed' as const, result } : img
         ));
         
-        // Deduct credit and save to history
-        if (deductCredits(1)) {
-          addProcessedImage(image.file.name, 1);
+        // Deduct credit
+        if (await deductCredit()) {
           processedCount++;
         }
       } catch (error) {
@@ -92,7 +88,6 @@ export default function BatchImageUploader() {
       }
     }
 
-    refreshCredits();
     setProcessing(false);
     setProgressText('');
     toast.success(`${processedCount} image(s) processed successfully!`);

@@ -1,15 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import type { UserProfile } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  subscription_tier: 'free' | 'starter' | 'pro' | 'enterprise';
-  credits_balance: number;
-  credits_used: number;
-}
 
 interface AuthState {
   user: User | null;
@@ -20,6 +12,7 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   fetchProfile: () => Promise<void>;
+  deductCredit: () => Promise<boolean>;
   initialize: () => Promise<void>;
 }
 
@@ -31,95 +24,51 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initialize: async () => {
     try {
-      // Check if Supabase is properly configured
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {
-        console.warn('Supabase not configured. Running in demo mode.');
-        set({ initialized: true, loading: false });
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
 
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.warn('Session error:', sessionError);
-        set({ initialized: true, loading: false });
-        return;
-      }
-      
       if (session?.user) {
         set({ user: session.user });
         await get().fetchProfile();
       }
-      
-      // Listen for auth changes
+
       supabase.auth.onAuthStateChange(async (event, session) => {
         set({ user: session?.user || null });
-        
         if (session?.user) {
           await get().fetchProfile();
         } else {
           set({ profile: null });
         }
       });
-      
-      set({ initialized: true, loading: false });
     } catch (error) {
       console.error('Auth initialization error:', error);
-      // Always set initialized to true so app doesn't hang
+    } finally {
       set({ initialized: true, loading: false });
     }
   },
 
-  signUp: async (email: string, password: string) => {
+  signUp: async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
 
       if (data.user) {
-        // Create user profile with 20 free credits
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email!,
-            subscription_tier: 'free',
-            credits_balance: 20,
-            credits_used: 0,
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-
         set({ user: data.user });
-        await get().fetchProfile();
+        // Trigger 会自动创建 profile，稍等后拉取
+        setTimeout(() => get().fetchProfile(), 1000);
       }
-
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   },
 
-  signIn: async (email: string, password: string) => {
+  signIn: async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
       set({ user: data.user });
       await get().fetchProfile();
-
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -135,18 +84,43 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { user } = get();
     if (!user) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
-      if (error) throw error;
-
+    if (!error && data) {
       set({ profile: data });
-    } catch (error) {
-      console.error('Fetch profile error:', error);
     }
+  },
+
+  deductCredit: async () => {
+    const { user, profile } = get();
+    if (!user || !profile) return false;
+    if (profile.credits_balance < 1) return false;
+
+    // Enterprise 用户不扣减余额
+    if (profile.credits_balance === 999999) {
+      await supabase
+        .from('user_profiles')
+        .update({ credits_used: profile.credits_used + 1 })
+        .eq('id', user.id);
+      await get().fetchProfile();
+      return true;
+    }
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({
+        credits_balance: profile.credits_balance - 1,
+        credits_used: profile.credits_used + 1,
+      })
+      .eq('id', user.id)
+      .gte('credits_balance', 1); // 防止并发超扣
+
+    if (error) return false;
+    await get().fetchProfile();
+    return true;
   },
 }));

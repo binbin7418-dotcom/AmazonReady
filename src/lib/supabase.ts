@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn('Supabase credentials not found. Running in demo mode.');
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -14,31 +14,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-export type Database = {
-  public: {
-    Tables: {
-      user_profiles: {
-        Row: {
-          id: string;
-          email: string;
-          full_name: string | null;
-          subscription_tier: 'free' | 'starter' | 'pro' | 'enterprise';
-          credits_balance: number;
-          credits_used: number;
-          created_at: string;
-        };
-      };
-      processed_images: {
-        Row: {
-          id: string;
-          user_id: string;
-          original_filename: string;
-          processed_url: string | null;
-          status: 'pending' | 'processing' | 'completed' | 'failed';
-          compliance_check: any;
-          created_at: string;
-        };
-      };
-    };
-  };
-};
+export interface UserProfile {
+  id: string;
+  email: string;
+  subscription_tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  credits_balance: number;
+  credits_used: number;
+  created_at: string;
+  updated_at: string;
+}

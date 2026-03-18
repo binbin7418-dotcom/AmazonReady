@@ -12,12 +12,13 @@
 - GitHub: https://github.com/binbin7418-dotcom/AmazonReady
 - Vercel: https://amazon-ready-c591.vercel.app
 - remove.bg API Key: `3nkRvTGhP3HdEihD8TWDKR6M`（已配置到 Vercel 环境变量 Production）
+- 联系邮箱: binbin7418@gmail.com
 
 ---
 
 ## 本地开发启动
 ```bash
-# 用 Kiro 打开 .kiro/amazonready 文件夹
+# 用 Kiro 打开 .kiro/amazonready 文件夹（或迁移后的 AmazonReady 文件夹）
 npm install        # 首次运行需要安装依赖
 npm run dev        # 启动本地服务器 → http://localhost:5173
 ```
@@ -26,7 +27,6 @@ npm run dev        # 启动本地服务器 → http://localhost:5173
 
 ## 推送代码到 GitHub（每次修改后执行）
 ```bash
-# 在 .kiro/amazonready 目录下执行
 git add -A
 git commit -m "描述你的改动"
 git push origin main
@@ -36,9 +36,9 @@ git push origin main
 ---
 
 ## Vercel 配置说明
-- Root Directory: `./`（仓库根目录，不是 .kiro/amazonready）
-- 环境变量：`REMOVE_BG_API_KEY=3nkRvTGhP3HdEihD8TWDKR6M`（必须设置为 Production 环境）
-- vercel.json 在 `.kiro/amazonready/vercel.json`
+- Root Directory: `./`（仓库根目录）
+- 环境变量：`REMOVE_BG_API_KEY=3nkRvTGhP3HdEihD8TWDKR6M`（Production 环境）
+- vercel.json 在项目根目录
 
 ---
 
@@ -65,37 +65,39 @@ git push origin main
 - [x] Vercel 部署 → https://amazon-ready-c591.vercel.app
 - [x] 环境变量配置（REMOVE_BG_API_KEY）
 
-### 阶段四：变现 ⏳（下次继续）
-- [ ] Lemon Squeezy 支付接入
-- [ ] 邮箱通知（有付费用户后再接）
-- [ ] Supabase 用户系统（有付费用户后再接）
+### 阶段四：变现 ✅（基础完成）
+- [x] Ko-fi 支付接入（三个产品链接已接入网站按钮）
+  - Starter $19 one-time (500 images): https://ko-fi.com/s/08a2884d3e
+  - Pro $49 one-time (2000 images): https://ko-fi.com/s/6c5b4aeb32
+  - Enterprise $199 one-time (Unlimited): https://ko-fi.com/s/a04a55443d
+- [x] 定价改为 one-time（非订阅）
+- [x] 页面加购买说明：Credits delivered within 24 hours
+- [x] 联系邮箱显示在页面：binbin7418@gmail.com
+
+### 阶段五：待开发 ⏳
+- [ ] Supabase 邮箱认证（现在是 demo 模式，credits 存 localStorage）
+- [ ] 自动发 credits（Ko-fi webhook → 自动加额度）
+- [ ] remove.bg 付费充值（需要海外卡，推荐 Wise/DuPay）
+- [ ] 流量获取（Reddit / Facebook Groups / SEO）
 
 ---
 
-## 下次开始：支付接入
-
-### 选定方案：Lemon Squeezy
-- 海外收款，注册不需要信用卡
-- 支持全球信用卡付款
-- 抽成 5% + $0.50/笔
-- 注册地址：https://lemonsqueezy.com
-
-### 操作步骤（下次继续）
-1. 去 lemonsqueezy.com 注册账号
-2. 创建 Store
-3. 创建 3 个产品：
-   - Starter: $19/月，500 images
-   - Pro: $49/月，2000 images
-   - Enterprise: $199/月，Unlimited
-4. 每个产品拿到 checkout URL
-5. 把 3 个 URL 告诉 Kiro，接入代码
+## 当前已知问题 & 待解决
+| 问题 | 状态 | 解决方案 |
+|------|------|---------|
+| PayPal 收款审核中 | ⏳ 等待 | Ko-fi 需先赚 $100 才能绑 PayPal |
+| 邮箱认证未接入 | ⏳ 待做 | 注册 Supabase，配置环境变量 |
+| remove.bg 超额付费 | ⏳ 待做 | 申请 Wise/DuPay 海外虚拟卡 |
+| Credits 存 localStorage | ⏳ 待做 | 接 Supabase 后迁移到数据库 |
 
 ---
 
-## 已知限制
-- 文字水印无法完全清除（AI 限制，非 bug）
-- remove.bg 免费额度：50 次/月，超出需付费
-- 批量处理：顺序处理，每张约 3-5 秒
+## 手动发 Credits 流程（现阶段）
+1. Ko-fi 收到购买通知邮件（发到 binbin7418@gmail.com）
+2. 邮件里有买家邮箱和购买套餐
+3. 目前 credits 存在用户浏览器 localStorage，无法远程修改
+4. **临时方案**：回复买家邮件，让他们告知账号，手动提供一个特殊访问码
+5. **正式方案**：接 Supabase 后可以后台直接加 credits
 
 ---
 
@@ -103,10 +105,11 @@ git push origin main
 - 前端: React 18 + TypeScript + Vite + Tailwind CSS + Zustand
 - 后端: Vercel Serverless Functions
 - AI: remove.bg API（去背景）
+- 数据库: 暂无（credits 存 localStorage）
 - 部署: Vercel
 - 代码托管: GitHub
 
-## 关键文件路径（相对于 .kiro/amazonready/）
+## 关键文件路径
 - 去背景 API: `api/remove-background.js`
 - 图片处理逻辑: `src/services/imageProcessor.ts`
 - 批量上传组件: `src/components/BatchImageUploader.tsx`
@@ -115,3 +118,4 @@ git push origin main
 - Landing 页面: `src/pages/Landing.tsx`
 - Auth 页面: `src/pages/Auth.tsx`
 - Dashboard: `src/pages/Dashboard.tsx`
+- Credits 逻辑: `src/store/authStore.ts`
