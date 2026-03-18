@@ -53,8 +53,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (data.user) {
         set({ user: data.user });
-        // Trigger 会自动创建 profile，稍等后拉取
-        setTimeout(() => get().fetchProfile(), 1000);
+
+        // 等 trigger 创建 profile，最多重试 5 次
+        let profile = null;
+        for (let i = 0; i < 5; i++) {
+          await new Promise(r => setTimeout(r, 800));
+          const { data: p } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+          if (p) { profile = p; break; }
+        }
+
+        // 如果 trigger 没创建，手动插入
+        if (!profile) {
+          await supabase.from('user_profiles').insert({
+            id: data.user.id,
+            email: data.user.email!,
+            subscription_tier: 'free',
+            credits_balance: 20,
+            credits_used: 0,
+          });
+        }
+
+        await get().fetchProfile();
       }
       return { success: true };
     } catch (error: any) {
