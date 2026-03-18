@@ -10,36 +10,36 @@ export default function Landing({ onGetStarted }: LandingProps) {
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Stop Getting Your Amazon Listings <span className="text-primary">Rejected</span>
+          <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            Stop Getting Your Amazon Listings <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Rejected</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Auto-format product photos to Amazon's exact specs (RGB 255,255,255 + 85% frame) in 3 seconds
+          <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+            AI-powered image processing that meets Amazon's exact specs in 3 seconds. Perfect white background, optimal sizing, compliance guaranteed.
           </p>
           <button
             onClick={onGetStarted}
-            className="bg-primary hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-primary to-blue-600 hover:shadow-2xl text-white px-10 py-4 rounded-lg text-lg font-bold transition-all shadow-lg transform hover:scale-105"
           >
             Start Free - 20 Images
           </button>
-          <p className="text-sm text-gray-500 mt-4">No credit card required</p>
+          <p className="text-sm text-gray-500 mt-4">✓ No credit card required • ✓ Instant results • ✓ 100% compliant</p>
         </div>
 
         {/* Problem Section */}
-        <div className="mt-20 bg-white rounded-2xl shadow-xl p-8 md:p-12">
-          <h2 className="text-3xl font-bold text-center mb-8">The Problem</h2>
+        <div className="mt-20 bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl shadow-lg p-8 md:p-12 border border-red-100">
+          <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">The Problem Sellers Face</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-red-500 mb-2">40%</div>
-              <p className="text-gray-600">of sellers waste hours fixing rejected images</p>
+              <div className="text-5xl font-bold text-red-600 mb-3">40%</div>
+              <p className="text-gray-700 font-medium">of sellers waste hours fixing rejected images</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-red-500 mb-2">$50-200</div>
-              <p className="text-gray-600">per product for professional photography</p>
+              <div className="text-5xl font-bold text-red-600 mb-3">$50-200</div>
+              <p className="text-gray-700 font-medium">per product for professional photography</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-red-500 mb-2">10 min</div>
-              <p className="text-gray-600">manual Photoshop editing per image</p>
+              <div className="text-5xl font-bold text-red-600 mb-3">10 min</div>
+              <p className="text-gray-700 font-medium">manual Photoshop editing per image</p>
             </div>
           </div>
         </div>
@@ -130,12 +130,12 @@ export default function Landing({ onGetStarted }: LandingProps) {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-12 text-center bg-primary text-white rounded-2xl p-12">
-          <h2 className="text-3xl font-bold mb-4">Ready to Stop Wasting Time?</h2>
-          <p className="text-xl mb-8 opacity-90">Join 500+ sellers who trust AmazonReady AI</p>
+        <div className="mt-12 text-center bg-gradient-to-r from-primary to-blue-600 text-white rounded-2xl p-12 shadow-2xl">
+          <h2 className="text-4xl font-bold mb-4">Ready to Stop Wasting Time?</h2>
+          <p className="text-xl mb-8 opacity-95">Process your first 20 images free. No credit card needed.</p>
           <button
             onClick={onGetStarted}
-            className="bg-white text-primary hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-colors"
+            className="bg-white text-primary hover:bg-gray-50 px-10 py-4 rounded-lg text-lg font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Start Free Trial
           </button>
@@ -147,10 +147,10 @@ export default function Landing({ onGetStarted }: LandingProps) {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-      <div className="mb-4">{icon}</div>
-      <h3 className="font-bold text-lg mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm">{description}</p>
+    <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-100">
+      <div className="mb-4 text-3xl">{icon}</div>
+      <h3 className="font-bold text-lg mb-3 text-gray-900">{title}</h3>
+      <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
     </div>
   );
 }
@@ -165,23 +165,23 @@ function PricingCard({ name, price, period, credits, features, popular, buyUrl }
   buyUrl: string;
 }) {
   return (
-    <div className={`bg-white rounded-xl shadow-lg p-8 ${popular ? 'ring-2 ring-primary scale-105' : ''}`}>
+    <div className={`bg-white rounded-xl shadow-lg p-8 transition-all transform hover:-translate-y-2 ${popular ? 'ring-2 ring-primary scale-105 shadow-2xl' : 'hover:shadow-xl'}`}>
       {popular && (
-        <div className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-4">
-          Most Popular
+        <div className="bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold px-4 py-2 rounded-full inline-block mb-4">
+          ⭐ Most Popular
         </div>
       )}
-      <h3 className="text-2xl font-bold mb-2">{name}</h3>
+      <h3 className="text-2xl font-bold mb-3 text-gray-900">{name}</h3>
       <div className="mb-4">
-        <span className="text-4xl font-bold">{price}</span>
-        <span className="text-gray-600">{period}</span>
+        <span className="text-5xl font-bold text-primary">{price}</span>
+        <span className="text-gray-600 ml-2">{period}</span>
       </div>
-      <p className="text-gray-600 mb-6">{credits}</p>
+      <p className="text-gray-600 mb-6 font-medium">{credits}</p>
       <ul className="space-y-3 mb-8">
         {features.map((feature, i) => (
-          <li key={i} className="flex items-start gap-2">
+          <li key={i} className="flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-            <span className="text-sm">{feature}</span>
+            <span className="text-sm text-gray-700">{feature}</span>
           </li>
         ))}
       </ul>
@@ -189,7 +189,7 @@ function PricingCard({ name, price, period, credits, features, popular, buyUrl }
         href={buyUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="block w-full bg-primary hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors text-center"
+        className={`block w-full py-3 rounded-lg font-bold transition-all text-center ${popular ? 'bg-gradient-to-r from-primary to-blue-600 text-white hover:shadow-lg' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
       >
         Get Started
       </a>
